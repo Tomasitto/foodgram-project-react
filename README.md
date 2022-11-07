@@ -1,6 +1,6 @@
 # `Foodgram` - сайт 'Продуктовый помощник'
 
-[![foodgram-project-react workflow](https://github.com/AigulParamonova/foodgram-project-react/actions/workflows/foodgram_workflow.yaml/badge.svg)](https://github.com/AigulParamonova/foodgram-project-react/actions/workflows/foodgram_workflow.yml)
+[![foodgram-project-react workflow](https://github.com/Tomasitto/foodgram-project-react/actions/workflows/foodgram_workflow.yaml/badge.svg)](https://github.com/Tomasitto/foodgram-project-react/actions/workflows/foodgram_workflow.yml)
 
 #### О проекте:
  Онлайн-сервис и API для него. На этом сервисе пользователи могут публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
