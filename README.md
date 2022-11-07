@@ -47,16 +47,12 @@
 
 Докуметация API:
 
-`http://84.252.141.70/api/docs/redoc.html`
+`http://158.160.36.18/api/docs/redoc.html`
 
 Проект:
 
-`http://84.252.141.70`
+`http://158.160.36.18`
 
 `http://foodgram-backend.tk`
 
-Суперпользователь:
 
-`Адрес электронной почты: jamie@yandex.ru`
-
-`Пароль: expert2022`
