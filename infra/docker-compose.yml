@@ -10,14 +10,14 @@ services:
       - ./.env
 
   frontend:
-    image: tomas12345mann/foodgram-frontend:latest 
+    image: tomas12345mann/foodgram-frontend:paramonova 
     volumes:
       - ./frontend/:/app/result_build/
     depends_on:
       - db
 
   backend:
-    image: tomas12345mann/foodgram:latest
+    image: tomas12345mann/foodgram:paramonova
     restart: always
     volumes:
       - static_value:/code/static/
