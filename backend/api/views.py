@@ -128,7 +128,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         serializer.save()
 
     @action(
-        methods=['post', 'delete'],
+        methods=['get', 'delete'],
         detail=True,
         permission_classes=(IsAuthenticated, )
     )
@@ -140,7 +140,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         )
         if user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-        if request.method == 'POST':
+        if request.method == 'GET':
             if not in_favorite:
                 favorite = Favorite.objects.create(user=user, recipe=recipe)
                 serializer = FavoriteSerializer(favorite.recipe)
@@ -157,7 +157,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=["post", "delete"],
+        methods=["get", "delete"],
         permission_classes=[IsAuthenticated, ],
     )
     def shopping_cart(self, request, pk=None):
@@ -169,7 +169,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         )
         if user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-        if request.method == 'POST':
+        if request.method == 'GET':
             if not in_shopping_cart:
                 shopping_cart = ShoppingCart.objects.create(
                     user=user,
