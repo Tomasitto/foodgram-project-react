@@ -47,12 +47,11 @@
 
 Докуметация API:
 
-`http://158.160.36.18/api/docs/redoc.html`
+'http://51.250.88.172/recipes/api/docs/redoc.html`
 
 Проект:
 
-`http://158.160.36.18`
+`http://51.250.88.172/recipes`
 
-`http://foodgram-backend.tk`
 
 
