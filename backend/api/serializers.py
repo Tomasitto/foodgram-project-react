@@ -72,7 +72,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         limit = self.context['request'].query_params.get('recipes_limit')
         recipes = obj.recipes.all() if limit is None \
-                  else obj.recipes.all()[:int(limit)]
+            else obj.recipes.all()[:int(limit)]
         return SubscriptionsRecipeSerializer(recipes, many=True).data
 
     def get_recipes_count(self, obj):
@@ -199,9 +199,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         recipe.tags.set(tags)
         data = [
             IngredientRecipe(
-                amount = ingredient.get('amount'),
-                ingredient_id = get_object_or_404(Ingredient,
-                                                  id=ingredient.get('id'))
+                amount=ingredient.get('amount'),
+                ingredient_id=get_object_or_404(Ingredient,
+                                                id=ingredient.get('id'))
 
             )
             for ingredient in ingredients
