@@ -165,7 +165,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
             request.method, request, pk, ShoppingCart, ShoppingCartSerializer
         )
 
-
     @action(
         methods=['get'],
         detail=False,
