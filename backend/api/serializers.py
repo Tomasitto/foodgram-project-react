@@ -201,13 +201,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         data = [
             IngredienRecipe(
                 amount = ingredient.get('amount'),
-                ingredient_id = get_object_or_404(Ingredient, id=ingredient.get('id'))
+                ingredient_id = get_object_or_404(Ingredient,
+                                                  id=ingredient.get('id'))
 
             )
         ]
         IngredienRecipe.objects.bulk_create(data)
 
-        #for ingredient in ingredients:
+        # for ingredient in ingredients:
         #    id = ingredient.get('id')
         #    amount = ingredient.get('amount')
         #    ingredient_id = get_object_or_404(Ingredient, id=id)
