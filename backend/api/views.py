@@ -84,12 +84,12 @@ class CustomUserViewSet(UserViewSet):
             )
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            if not subscribe.exists():
-                data = {'errors': 'Вы не подписаны на данного автора.'}
-                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-            subscribe.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+        if not subscribe.exists():
+            data = {'errors': 'Вы не подписаны на данного автора.'}
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+        subscribe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagsViewSet(RetrieveListViewSet):
