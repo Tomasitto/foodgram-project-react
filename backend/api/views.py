@@ -43,9 +43,8 @@ class CustomUserViewSet(UserViewSet):
             user.set_password(serializer.data['new_password'])
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False,
             methods=['get'],
@@ -85,7 +84,7 @@ class CustomUserViewSet(UserViewSet):
             )
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             if not subscribe.exists():
                 data = {'errors': 'Вы не подписаны на данного автора.'}
                 return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
@@ -95,6 +94,7 @@ class CustomUserViewSet(UserViewSet):
 
 class TagsViewSet(RetrieveListViewSet):
     queryset = Tag.objects.all()
+    http_method_names = ["get"]
     serializer_class = TagSerializer
     permission_classes = (AllowAny, )
     pagination_class = None
@@ -102,6 +102,7 @@ class TagsViewSet(RetrieveListViewSet):
 
 class IngredientsViewSet(RetrieveListViewSet):
     queryset = Ingredient.objects.all()
+    http_method_names = ["get"]
     serializer_class = IngredientSerializer
     permission_classes = (AllowAny, )
     filter_backends = (DjangoFilterBackend, )
@@ -111,6 +112,7 @@ class IngredientsViewSet(RetrieveListViewSet):
 
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
+    http_method_names = ["get", "post"]
     serializer_class = RecipeListSerializer
     permission_classes = (IsAuthorAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, )
