@@ -71,7 +71,8 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         limit = self.context['request'].query_params.get('recipes_limit')
-        recipes = obj.recipes.all() if limit is None else obj.recipes.all()[:int(limit)]
+        recipes = obj.recipes.all() if limit is None \
+                  else obj.recipes.all()[:int(limit)]
         return SubscriptionsRecipeSerializer(recipes, many=True).data
 
     def get_recipes_count(self, obj):
@@ -157,7 +158,6 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True
@@ -174,7 +174,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients = self.initial_data.get('ingredients')
         if len(ingredients):
             raise ValidationError('Нужно выбрать минимум 1 ингридиент!')
-        
         return data
 
     def get_ingredients(self, obj):
@@ -199,14 +198,15 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
         data = [
-            IngredienRecipe(
+            IngredientRecipe(
                 amount = ingredient.get('amount'),
                 ingredient_id = get_object_or_404(Ingredient,
                                                   id=ingredient.get('id'))
 
             )
+            for ingredient in ingredients
         ]
-        IngredienRecipe.objects.bulk_create(data)
+        IngredientRecipe.objects.bulk_create(data)
 
         # for ingredient in ingredients:
         #    id = ingredient.get('id')
