@@ -29,22 +29,18 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
 
     @action(detail=False,
-            methods=['post'],
+            methods=['get'],
             permission_classes=(IsAuthenticated, ))
-    def set_password(self, request, pk=None):
-        user = self.request.user
-        if user.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        serializer = PasswordSerializer(
-            data=request.data,
+    def subscriptions(self, request):
+        user = request.user
+        queryset = User.objects.filter(follower__user=user)
+        pages = self.paginate_queryset(queryset)
+        serializer = SubscribeSerializer(
+            pages,
+            many=True,
             context={'request': request}
         )
-        if serializer.is_valid():
-            user.set_password(serializer.data['new_password'])
-            user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
+        return self.get_paginated_response(serializer.data)
 
     @action(
         methods=['get', 'delete'],
