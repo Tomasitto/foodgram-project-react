@@ -1,7 +1,10 @@
+import csv
+
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
 
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from recipes.models import (Favorite, Ingredient, Recipe,
                             ShoppingCart, Tag)
@@ -15,9 +18,11 @@ from .filters import IngredientFilter, RecipeFilter
 from .mixins import RetrieveListViewSet
 from .permissions import IsAuthorAdminOrReadOnly
 from .serializers import (CustomUserSerializer, FavoriteSerializer,
-                          IngredientSerializer, RecipeCreateSerializer,
-                          RecipeListSerializer, ShoppingCartSerializer,
-                          SubscribeSerializer, TagSerializer)
+                          IngredientSerializer, PasswordSerializer,
+                          RecipeCreateSerializer, RecipeListSerializer,
+                          ShoppingCartSerializer, SubscribeSerializer,
+                          TagSerializer)
+
 from .utils import get_shopping_cart
 
 
@@ -101,57 +106,94 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return RecipeListSerializer
         return RecipeCreateSerializer
 
-    @staticmethod
-    def create_object(request, pk, serializers):
-        data = {'user': request.user.id, 'recipe': pk}
-        serializer = serializers(data=data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @staticmethod
-    def delete_object(request, pk, model):
-        user = request.user
+    @action(
+        methods=['get', 'delete'],
+        detail=True,
+        permission_classes=(IsAuthenticated, )
+    )
+    def favorite(self, request, pk=None):
+        user = self.request.user
         recipe = get_object_or_404(Recipe, pk=pk)
-        object = get_object_or_404(model, user=user, recipe=recipe)
-        object.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def _create_or_destroy(self, http_method, recipe, key,
-                           model, serializer):
-        if http_method == 'POST':
-            return self.create_object(request=recipe, pk=key,
-                                      serializers=serializer)
-        return self.delete_object(request=recipe, pk=key, model=model)
+        in_favorite = Favorite.objects.filter(
+            user=user, recipe=recipe
+        )
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        if request.method == 'GET':
+            if not in_favorite:
+                favorite = Favorite.objects.create(user=user, recipe=recipe)
+                serializer = FavoriteSerializer(favorite.recipe)
+                return Response(
+                    data=serializer.data,
+                    status=status.HTTP_201_CREATED
+                )
+        elif request.method == 'DELETE':
+            if not in_favorite:
+                data = {'errors': 'Такого рецепта нет в избранных.'}
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+            in_favorite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
-        methods=('post', 'delete'),
-        permission_classes=(IsAuthenticated,),
+        methods=["get", "delete"],
+        permission_classes=[IsAuthenticated, ],
     )
-    def favorite(self, request, pk):
-        return self._create_or_destroy(
-            request.method, request, pk, Favorite, FavoriteSerializer
+    def shopping_cart(self, request, pk=None):
+        user = self.request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+        in_shopping_cart = ShoppingCart.objects.filter(
+            user=user,
+            recipe=recipe
         )
-
-    @action(
-        detail=True,
-        methods=('post', 'delete'),
-        permission_classes=(IsAuthenticated,),
-    )
-    def shopping_cart(self, request, pk):
-        return self._create_or_destroy(
-            request.method, request, pk, ShoppingCart, ShoppingCartSerializer
-        )
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        if request.method == 'GET':
+            if not in_shopping_cart:
+                shopping_cart = ShoppingCart.objects.create(
+                    user=user,
+                    recipe=recipe
+                )
+                serializer = ShoppingCartSerializer(shopping_cart.recipe)
+                return Response(
+                    data=serializer.data,
+                    status=status.HTTP_201_CREATED
+                )
+        elif request.method == 'DELETE':
+            if not in_shopping_cart:
+                data = {'errors': 'Такой рецепта нет в списке покупок.'}
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+            in_shopping_cart.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         methods=['get'],
         detail=False,
         permission_classes=[IsAuthenticated, ],
     )
-    def download_shopping_cart(self, user):
-        shopping_cart = get_shopping_cart(user)
-        filename = 'shopping-list.txt'
-        response = HttpResponse(shopping_cart, content_type='text/plain')
-        response['Content-Disposition'] = f'attachment; filename={filename}'
+    def download_shopping_cart(self, request):
+        """Скачать список покупок."""
+        user = self.request.user
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        ingredients = IngredientRecipe.objects.filter(
+            recipe__shopping_cart__user=request.user
+        ).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+        ).annotate(ingredient_amount=Sum('amount')).values_list(
+            'ingredient__name', 'ingredient__measurement_unit',
+            'ingredient_amount')
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = ('attachment;'
+                                           'filename="Shoppingcart.csv"')
+        response.write(u'\ufeff'.encode('utf8'))
+        writer = csv.writer(response)
+        for item in list(ingredients):
+            writer.writerow(item)
         return response
