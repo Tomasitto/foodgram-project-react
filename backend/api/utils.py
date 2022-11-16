@@ -1,6 +1,6 @@
 from collections import Counter
 
-from recipe.models import IngredientRecipe
+from recipes.models import IngredientRecipe
 
 
 def get_shopping_cart(user):
