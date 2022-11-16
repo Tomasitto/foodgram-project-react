@@ -1,6 +1,5 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from recipes.models import (Favorite, Ingredient, Recipe,
@@ -16,7 +15,7 @@ from .mixins import RetrieveListViewSet
 from .permissions import IsAuthorAdminOrReadOnly
 from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           IngredientSerializer, RecipeCreateSerializer,
-                          RecipeListSerializer, ShoppingCartSerializer, 
+                          RecipeListSerializer, ShoppingCartSerializer,
                           SubscribeSerializer, TagSerializer)
 from .utils import get_shopping_cart
 
