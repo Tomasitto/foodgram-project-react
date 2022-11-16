@@ -1,12 +1,9 @@
-import csv
-
-from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
+from recipes.models import (Favorite, Ingredient, Recipe,
                             ShoppingCart, Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -18,9 +15,8 @@ from .filters import IngredientFilter, RecipeFilter
 from .mixins import RetrieveListViewSet
 from .permissions import IsAuthorAdminOrReadOnly
 from .serializers import (CustomUserSerializer, FavoriteSerializer,
-                          IngredientSerializer, PasswordSerializer,
-                          RecipeCreateSerializer, RecipeListSerializer,
-                          ShoppingCartSerializer, SubscribeSerializer,
+                          IngredientSerializer, RecipeCreateSerializer,
+                          RecipeListSerializer, ShoppingCartSerializer, SubscribeSerializer,
                           TagSerializer)
 from .utils import get_shopping_cart
 
