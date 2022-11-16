@@ -22,6 +22,7 @@ from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           RecipeCreateSerializer, RecipeListSerializer,
                           ShoppingCartSerializer, SubscribeSerializer,
                           TagSerializer)
+from .utils import get_shopping_cart
 
 
 class CustomUserViewSet(UserViewSet):
@@ -152,23 +153,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
         detail=False,
         permission_classes=[IsAuthenticated, ],
     )
-    def download_shopping_cart(self, request):
-        """Скачать список покупок."""
-        user = self.request.user
-        if user.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        ingredients = IngredientRecipe.objects.filter(
-            recipe__shopping_cart__user=request.user
-        ).values(
-            'ingredient__name', 'ingredient__measurement_unit'
-        ).annotate(ingredient_amount=Sum('amount')).values_list(
-            'ingredient__name', 'ingredient__measurement_unit',
-            'ingredient_amount')
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = ('attachment;'
-                                           'filename="Shoppingcart.csv"')
-        response.write(u'\ufeff'.encode('utf8'))
-        writer = csv.writer(response)
-        for item in list(ingredients):
-            writer.writerow(item)
+    def download_shopping_cart(self, user):
+        shopping_cart = get_shopping_cart(user)
+        filename = 'shopping-list.txt'
+        response = HttpResponse(shopping_cart, content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
