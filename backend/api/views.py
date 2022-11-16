@@ -133,12 +133,11 @@ class RecipesViewSet(viewsets.ModelViewSet):
                     data=serializer.data,
                     status=status.HTTP_201_CREATED
                 )
-        elif request.method == 'DELETE':
-            if not in_favorite:
-                data = {'errors': 'Такого рецепта нет в избранных.'}
-                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-            in_favorite.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        if not in_favorite:
+            data = {'errors': 'Такого рецепта нет в избранных.'}
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+        in_favorite.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
@@ -165,12 +164,12 @@ class RecipesViewSet(viewsets.ModelViewSet):
                     data=serializer.data,
                     status=status.HTTP_201_CREATED
                 )
-        elif request.method == 'DELETE':
-            if not in_shopping_cart:
-                data = {'errors': 'Такой рецепта нет в списке покупок.'}
-                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-            in_shopping_cart.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+        if not in_shopping_cart:
+            data = {'errors': 'Такой рецепта нет в списке покупок.'}
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+        in_shopping_cart.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         methods=['get'],
