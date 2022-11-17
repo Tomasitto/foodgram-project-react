@@ -35,14 +35,17 @@ class CustomUserViewSet(UserViewSet):
             permission_classes=(IsAuthenticated, ))
     def subscriptions(self, request):
         user = request.user
-        queryset = User.objects.filter(follower__user=user)
-        pages = self.paginate_queryset(queryset)
-        serializer = SubscribeSerializer(
-            pages,
-            many=True,
-            context={'request': request}
-        )
-        return self.get_paginated_response(serializer.data)
+        queryset = User.objects.filter(following__user=user)
+        if queryset:
+            pages = self.paginate_queryset(queryset)
+            serializer = SubscribeSerializer(
+                pages,
+                many=True,
+                context={'request': request}
+            )
+            return self.get_paginated_response(serializer.data)
+        return Response('Вы ни на кого не подписаны.',
+                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         methods=['get', 'delete'],
