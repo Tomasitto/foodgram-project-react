@@ -98,7 +98,7 @@ class IngredientsViewSet(RetrieveListViewSet):
 
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    http_method_names = ["get", "post", "put", "patch", "delete"]
+    http_method_names = ["get", "post", "put", "delete"]
     serializer_class = RecipeListSerializer
     permission_classes = (IsAuthorAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, )
@@ -115,10 +115,11 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save()
 
-    def create_object(self, request, pk, serializers, model):
-        user = self.request.user
-        recipe = get_object_or_404(Recipe, pk=pk)
-        get_data = model.objects.filter(
+    def create_object(self, **pull_data):
+        user = pull_data.get('request').user
+        model =  pull_data.get('model')
+        recipe = get_object_or_404(Recipe, pk=pull_data.get('pk'))
+        get_data =model.objects.filter(
             user=user,
             recipe=recipe
         )
@@ -127,7 +128,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
                         user=user,
                         recipe=recipe
                     )
-            serializer = serializers(data.recipe)
+            serializer =  pull_data.get('serializers')(data.recipe)
             return Response(
                 data=serializer.data,
                 status=status.HTTP_201_CREATED
@@ -192,7 +193,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
         filename = 'shopping_cart.txt'
         data = '\n'.join([' '.join(map(str, list(ing))) for ing in ingredients])
         print(data)
-        response = HttpResponse(data, content_type='text/plain')
+        response = HttpResponse(data, content_type='text/csv')
         response['Content-Disposition'] = (f'attachment; filename={filename}')
         return response
  
+
