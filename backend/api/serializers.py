@@ -191,16 +191,13 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        data = [
-            IngredientRecipe(
-                amount=ingredient.get('amount'),
-                ingredient_id=get_object_or_404(Ingredient,
-                                                id=ingredient.get('id')),
-                recipe=recipe
+        for ingredient in ingredients:
+            id = ingredient.get('id')
+            amount = ingredient.get('amount')
+            ingredient_id = get_object_or_404(Ingredient, id=id)
+            IngredientRecipe.objects.create(
+                recipe=recipe, ingredient=ingredient_id, amount=amount
             )
-            for ingredient in ingredients
-        ]
-        IngredientRecipe.objects.bulk_create(data)
         recipe.save()
         return recipe
 
