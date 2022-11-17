@@ -98,7 +98,7 @@ class IngredientsViewSet(RetrieveListViewSet):
 
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    http_method_names = ["get", "post", "put", "delete"]
+    http_method_names = ["get", "post", "put", "patch", "delete"]
     serializer_class = RecipeListSerializer
     permission_classes = (IsAuthorAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, )
