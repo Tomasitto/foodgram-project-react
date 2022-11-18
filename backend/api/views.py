@@ -140,7 +140,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     
     def delete_object(self, request, pk, model):
         user = request.user
-        recipe = get_object_or_404(Recipe, pk=pk) 
+        recipe = Recipe.objects.get(pk=pk) 
         del_data = get_object_or_404(model, user=user, recipe=recipe)
         del_data.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
