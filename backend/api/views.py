@@ -98,7 +98,7 @@ class IngredientsViewSet(RetrieveListViewSet):
 
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    http_method_names = ["get", "post", "put", "delete"]
+    http_method_names = ["get", "post", "patch", "delete"]
     serializer_class = RecipeListSerializer
     permission_classes = (IsAuthorAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, )
@@ -138,7 +138,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
             )
     
+    
     def delete_object(self, request, pk, model):
+      '''Удаляем рецепт из таблицы Favorite\ShoppingCart'''
         user = request.user
         recipe = Recipe.objects.get(pk=pk) 
         del_data = get_object_or_404(model, user=user, recipe=recipe)
