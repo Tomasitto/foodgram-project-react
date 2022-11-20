@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from users.models import Subscribe, User
 
 from .filters import IngredientFilter, RecipeFilter
-from .mixins import RetrieveListViewSet
+from .mixins import RetrieveListViewSet, CreateDestroy
 from .permissions import IsAuthorAdminOrReadOnly
 from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           IngredientSerializer, PasswordSerializer,
@@ -51,29 +51,9 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=(IsAuthenticated, )
     )
     def subscribe(self, request, id):
-        user = self.request.user
-        author = get_object_or_404(User, id=id)
-        subscribe = Subscribe.objects.filter(user=user, author=author)
-        if user.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        if request.method == 'GET':
-            if subscribe.exists():
-                data = {
-                    'errors': ('Вы подписаны на этого автора, '
-                               'или пытаетесь подписаться на себя.')}
-                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-            Subscribe.objects.create(user=user, author=author)
-            serializer = SubscribeSerializer(
-                author,
-                context={'request': request}
+        return self._create_or_destroy(
+            request.method, request, User, id, Subscribe, SubscribeSerializer
             )
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
-        if not subscribe.exists():
-            data = {'errors': 'Вы не подписаны на данного автора.'}
-            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-        subscribe.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagsViewSet(RetrieveListViewSet):
@@ -94,7 +74,7 @@ class IngredientsViewSet(RetrieveListViewSet):
     pagination_class = None
 
 
-class RecipesViewSet(viewsets.ModelViewSet):
+class RecipesViewSet(viewsets.ModelViewSet, CreateDestroy):
     queryset = Recipe.objects.all()
     http_method_names = ["get", "post", "patch", "delete"]
     serializer_class = RecipeListSerializer
@@ -103,60 +83,15 @@ class RecipesViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
-      """Создаем или получаем список рецептов."""
         if self.request.method == 'GET':
             return RecipeListSerializer
         return RecipeCreateSerializer
 
     def perform_create(self, serializer):
-      """Создаем рецепт."""
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
-      """Обновляем рецепт."""
         serializer.save()
-
-    def create_object(self, **pull_data):
-      """Добавляем рецепт в таблицы Favorite\ShoppingCart."""
-        user = pull_data.get('request').user
-        model =  pull_data.get('model')
-        recipe = get_object_or_404(Recipe, pk=pull_data.get('pk'))
-        get_data =model.objects.filter(
-            user=user,
-            recipe=recipe
-        )
-        if not get_data:
-            data = model.objects.create(
-                        user=user,
-                        recipe=recipe
-                    )
-            serializer =  pull_data.get('serializers')(data.recipe)
-            return Response(
-                data=serializer.data,
-                status=status.HTTP_201_CREATED
-            )
-        return Response(
-                    data={'errors': f'Рецепт уже в {model.__name__}'},
-                    status=status.HTTP_400_BAD_REQUEST
-            )
-    
-    
-    def delete_object(self, request, pk, model):
-      """Удаляем рецепт из таблицы Favorite\ShoppingCart."""
-        user = request.user
-        recipe = Recipe.objects.get(pk=pk) 
-        del_data = get_object_or_404(model, user=user, recipe=recipe)
-        del_data.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-    def _create_or_destroy(self, http_method, recipe, key, model, serializer):
-      """Проверка запроса на метод."""
-        if http_method == 'GET':
-            return self.create_object(request=recipe, pk=key, serializers=serializer, model=model)
-        return self.delete_object(request=recipe, pk=key, model=model)
-        
 
     @action(
         detail=True,
@@ -164,9 +99,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated, ],
     )
     def favorite(self, request, pk=None):
-      """Удаляем\создаем рецепт в Favorite."""
         return self._create_or_destroy(
-            request.method, request, pk, Favorite, FavoriteSerializer
+            request.method, request, Recipe, pk, Favorite, FavoriteSerializer
             )
 
     @action(
@@ -175,9 +109,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated, ],
     )
     def shopping_cart(self, request, pk=None):
-      """Удаляем\создаем рецепт в ShoppingCart."""
         return self._create_or_destroy(
-            request.method, request, pk, ShoppingCart, ShoppingCartSerializer
+            request.method, request, Recipe, pk, ShoppingCart, ShoppingCartSerializer
             )
 
     @action(
@@ -202,4 +135,4 @@ class RecipesViewSet(viewsets.ModelViewSet):
         response = HttpResponse(data, content_type='text/csv')
         response['Content-Disposition'] = (f'attachment; filename={filename}')
         return response
- 
+      
