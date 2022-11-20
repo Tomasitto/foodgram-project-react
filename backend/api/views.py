@@ -32,6 +32,7 @@ class CustomUserViewSet(UserViewSet, CreateDestroy):
             methods=['get'],
             permission_classes=(IsAuthenticated, ))
     def subscriptions(self, request):
+        """Список всех подписок."""
         user = request.user
         queryset = User.objects.filter(following__user=user)
         if queryset:
@@ -51,6 +52,7 @@ class CustomUserViewSet(UserViewSet, CreateDestroy):
         permission_classes=(IsAuthenticated, )
     )
     def subscribe(self, request, id):
+        """Оформить подписку или отписаться."""
         return self._create_or_destroy(
             request.method, request, User, id, Subscribe, SubscribeSerializer
             )
@@ -88,9 +90,11 @@ class RecipesViewSet(viewsets.ModelViewSet, CreateDestroy):
         return RecipeCreateSerializer
 
     def perform_create(self, serializer):
+        """Добавить рецепт."""
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
+        """Обновить рецепт."""
         serializer.save()
 
     @action(
@@ -99,6 +103,7 @@ class RecipesViewSet(viewsets.ModelViewSet, CreateDestroy):
         permission_classes=[IsAuthenticated, ],
     )
     def favorite(self, request, pk=None):
+        """Добавить\удалить рецепт из избранного."""
         return self._create_or_destroy(
             request.method, request, Recipe, pk, Favorite, FavoriteSerializer
             )
@@ -109,6 +114,7 @@ class RecipesViewSet(viewsets.ModelViewSet, CreateDestroy):
         permission_classes=[IsAuthenticated, ],
     )
     def shopping_cart(self, request, pk=None):
+        """Добавить\удалить рецепт из корзины."""
         return self._create_or_destroy(
             request.method, request, Recipe, pk, ShoppingCart, ShoppingCartSerializer
             )
