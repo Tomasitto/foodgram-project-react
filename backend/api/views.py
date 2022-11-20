@@ -24,7 +24,7 @@ from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           TagSerializer)
 
 
-class CustomUserViewSet(UserViewSet):
+class CustomUserViewSet(UserViewSet, CreateDestroy):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
 
