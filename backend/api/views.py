@@ -23,8 +23,6 @@ from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           ShoppingCartSerializer, SubscribeSerializer,
                           TagSerializer)
 
-from .utils import get_shopping_cart
-
 
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
@@ -105,17 +103,21 @@ class RecipesViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
+      """Создаем или получаем список рецептов."""
         if self.request.method == 'GET':
             return RecipeListSerializer
         return RecipeCreateSerializer
 
     def perform_create(self, serializer):
+      """Создаем рецепт."""
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
+      """Обновляем рецепт."""
         serializer.save()
 
     def create_object(self, **pull_data):
+      """Добавляем рецепт в таблицы Favorite\ShoppingCart."""
         user = pull_data.get('request').user
         model =  pull_data.get('model')
         recipe = get_object_or_404(Recipe, pk=pull_data.get('pk'))
@@ -140,7 +142,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     
     
     def delete_object(self, request, pk, model):
-      '''Удаляем рецепт из таблицы Favorite\ShoppingCart'''
+      """Удаляем рецепт из таблицы Favorite\ShoppingCart."""
         user = request.user
         recipe = Recipe.objects.get(pk=pk) 
         del_data = get_object_or_404(model, user=user, recipe=recipe)
@@ -150,6 +152,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
 
     def _create_or_destroy(self, http_method, recipe, key, model, serializer):
+      """Проверка запроса на метод."""
         if http_method == 'GET':
             return self.create_object(request=recipe, pk=key, serializers=serializer, model=model)
         return self.delete_object(request=recipe, pk=key, model=model)
@@ -161,6 +164,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated, ],
     )
     def favorite(self, request, pk=None):
+      """Удаляем\создаем рецепт в Favorite."""
         return self._create_or_destroy(
             request.method, request, pk, Favorite, FavoriteSerializer
             )
@@ -171,6 +175,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated, ],
     )
     def shopping_cart(self, request, pk=None):
+      """Удаляем\создаем рецепт в ShoppingCart."""
         return self._create_or_destroy(
             request.method, request, pk, ShoppingCart, ShoppingCartSerializer
             )
@@ -194,9 +199,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             'ingredient_amount')
         filename = 'shopping_cart.txt'
         data = '\n'.join([' '.join(map(str, list(ing))) for ing in ingredients])
-        print(data)
         response = HttpResponse(data, content_type='text/csv')
         response['Content-Disposition'] = (f'attachment; filename={filename}')
         return response
  
-
