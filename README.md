@@ -18,7 +18,7 @@
 
 Клонировать репозиторий и перейти в него в командной строке:
 
-`https://github.com/AigulParamonova/foodgram-project-react.git`
+`https://github.com/Tomasitto/foodgram-project-react`
 
 `cd foodgram-project-react`
 
