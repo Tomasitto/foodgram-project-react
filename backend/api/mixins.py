@@ -18,7 +18,7 @@ class CreateDestroy:
         search_model = pull_data.get('search_model')
         search_req = get_object_or_404(search_model, pk=pull_data.get('pk'))
         if search_model.__name__ == 'User':
-            get_data =model.objects.filter(
+            get_data = model.objects.filter(
                 user=user,
                 author=search_req
             )
