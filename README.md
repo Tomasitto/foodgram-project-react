@@ -47,11 +47,11 @@
 
 Докуметация API:
 
-'http://51.250.88.172/recipes/api/docs/redoc.html`
+'https://tomasitto.myftp.org/recipes/api/docs/redoc.html`
 
 Проект:
 
-`http://51.250.88.172`
+`https://tomasitto.myftp.org/`
 
 
 
