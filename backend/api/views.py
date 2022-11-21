@@ -1,5 +1,3 @@
-import csv
-
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -88,14 +86,6 @@ class RecipesViewSet(viewsets.ModelViewSet, CreateDestroy):
         if self.request.method == 'GET':
             return RecipeListSerializer
         return RecipeCreateSerializer
-
-    def perform_create(self, serializer):
-        """Добавить рецепт."""
-        serializer.save(author=self.request.user)
-
-    def perform_update(self, serializer):
-        """Обновить рецепт."""
-        serializer.save()
 
     @action(
         detail=True,
