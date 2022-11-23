@@ -5,11 +5,13 @@ from recipes.models import Ingredient, Recipe, Tag
 
 User = get_user_model()
 
+FILTER_USER = {'favorites': 'favorite_recipe__user',
+               'shop_list': 'shopping_cart__user'}
 
 class RecipeFilter(filters.FilterSet):
     tags = filters.ModelMultipleChoiceFilter(
         queryset=Tag.objects.all(),
-        field_name='tags__slug',
+        field_name ='tags__slug',
         to_field_name='slug'
     )
     is_favorited = filters.BooleanFilter(method='get_is_favorited')
@@ -21,17 +23,16 @@ class RecipeFilter(filters.FilterSet):
         model = Recipe
         fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart')
 
-    def get_is_favorited(self, queryset, name, value):
+    def _get_queryset(self, queryset, name, value, model):
         if value:
-            return Recipe.objects.filter(
-                favorite_recipe__user=self.request.user
-            )
-        return Recipe.objects.all()
+            return queryset.filter(**{FILTER_USER[model]: self.request.user})
+        return queryset
+
+    def get_is_favorited(self, queryset, name, value):
+        return self._get_queryset(queryset, name, value, 'favorites')
 
     def get_is_in_shopping_cart(self, queryset, name, value):
-        if value:
-            return Recipe.objects.filter(shopping_cart__user=self.request.user)
-        return Recipe.objects.all()
+        return self._get_queryset(queryset, name, value, 'shop_list')
 
 
 class IngredientFilter(filters.FilterSet):
